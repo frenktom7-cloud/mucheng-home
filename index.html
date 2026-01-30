@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+    />
+    <title>沐程之家</title>
+    <meta
+      name="description"
+      content="声之寄居 · 虚拟偶像粉丝卡片，小小屏幕里的梦幻居所。"
+    />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#a3bffa" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- interact.js 用于拖拽 / 缩放 / 旋转 -->
+    <script src="https://cdn.jsdelivr.net/npm/@interactjs/interactjs/index.min.js"></script>
+    <!-- html2canvas 用于截图保存 -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              dreamPink: "#f9a8d4",
+              dreamBlue: "#bfdbfe",
+              dreamPurple: "#c4b5fd",
+            },
+            boxShadow: {
+              "soft-card":
+                "0 20px 40px rgba(15, 23, 42, 0.45), 0 0 40px rgba(129, 140, 248, 0.5)",
+            },
+          },
+        },
+      };
+    </script>
+
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body
+    class="flex items-center justify-center text-slate-50 antialiased selection:bg-fuchsia-300/40 selection:text-slate-900 bg-slate-950 min-h-screen"
+  >
+    <!-- 移动端容器 -->
+    <div class="app-container w-full max-w-[500px] mx-auto min-h-screen bg-slate-900 border border-slate-700/50 shadow-2xl rounded-3xl overflow-hidden relative">
+    <!-- 引导页 Layer -->
+    <div
+      id="layer-splash"
+      class="absolute inset-0 z-40 flex items-center justify-center"
+    >
+      <div
+        class="absolute inset-0 bg-[url('/images/splash-bg.jpg')] bg-cover bg-center"
+      ></div>
+      <div class="relative z-10 w-full px-6 py-10 flex flex-col justify-end min-h-full">
+        <div class="mb-16">
+          <p class="text-xs tracking-[0.35em] uppercase text-slate-300/80 mb-3">
+            VIRTUAL IDOL SPACE
+          </p>
+          <h1 class="text-3xl font-semibold tracking-wide mb-2 text-white">沐程之家</h1>
+          <p class="text-sm text-slate-200/80 max-w-sm">
+            在这里，你的声音、昵称和小小心愿，会被温柔地收纳进他的宇宙里。
+          </p>
+        </div>
+        <div class="flex justify-center">
+          <button
+            id="btn-splash-enter"
+            type="button"
+            class="group relative inline-flex items-center justify-center px-10 py-3 rounded-full bg-gradient-to-br from-slate-900 via-black to-slate-900 border border-slate-500/80 shadow-[0_18px_40px_rgba(0,0,0,0.85)] overflow-hidden btn-breathing-glow"
+          >
+            <div
+              class="absolute inset-[1px] rounded-full bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-950"
+            ></div>
+            <div
+              class="absolute -inset-10 opacity-0 group-hover:opacity-60 bg-[radial-gradient(circle_at_0%_0%,rgba(148,163,184,0.7),transparent_55%),radial-gradient(circle_at_100%_100%,rgba(129,140,248,0.9),transparent_55%)] transition-opacity duration-500"
+            ></div>
+            <span
+              class="relative z-10 text-sm font-medium tracking-[0.3em] uppercase text-slate-100"
+            >
+              响应呼唤
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 主功能菜单 Layer -->
+    <div
+      id="menu-page"
+      class="absolute inset-0 z-30 hidden items-center justify-center"
+    >
+      <!-- 背景图 -->
+      <div
+        class="absolute inset-0 bg-[url('/images/main-menu-bg.jpg')] bg-cover bg-center bg-fixed"
+      ></div>
+      
+      <!-- 菜单内容 -->
+      <div class="relative z-10 w-full h-full">
+        <!-- 声音手账按钮 -->
+        <button
+          id="btn-journal"
+          class="absolute top-[65%] left-[50%] transform translate(-50%, -50%) z-100 animate-breathing-label otome-button"
+        >
+          声音手账
+        </button>
+        
+        <!-- 专属卡面按钮 -->
+        <button
+          id="btn-card"
+          class="absolute top-[85%] left-[50%] transform translate(-50%, -50%) z-100 animate-breathing-label otome-button"
+          style="animation-delay: 0.5s;"
+        >
+          专属卡面
+        </button>
+      </div>
+    </div>
+    
+    <!-- 乙游级转场遮罩 -->
+    <div
+      id="transition-overlay"
+      class="fixed inset-0 z-50 flex items-center justify-center"
+    >
+      <div class="overlay-content absolute inset-0 bg-gradient-to-b from-purple-900/60 to-black/90 backdrop-blur-3xl"></div>
+      <div class="particles-container absolute inset-0"></div>
+    </div>
+    
+    <!-- 星尘遮罩层 -->
+    <div
+      id="stardust-overlay"
+      class="fixed inset-0 z-50 hidden flex items-center justify-center"
+    >
+      <div class="overlay-content absolute inset-0 bg-gradient-to-b from-purple-900/90 to-black/95 backdrop-blur-3xl"></div>
+      <div class="particles-container absolute inset-0"></div>
+    </div>
+
+    <!-- 身份卡主界面 Layer -->
+    <div
+      id="layer-identity"
+      class="w-full max-w-[500px] min-h-screen md:min-h-[640px] px-4 py-6 flex flex-col mx-auto hidden"
+    >
+      <!-- 顶部：偶像名字 + 返回按钮 -->
+      <header class="mb-4">
+        <div
+          class="backdrop-blur-xl bg-slate-900/40 border border-slate-50/10 rounded-3xl px-5 py-3 shadow-xl flex items-center justify-between gap-3"
+        >
+          <div>
+            <h1 class="text-2xl font-semibold tracking-wide">
+              沐程之家
+            </h1>
+          </div>
+          <button
+              id="btn-back-to-menu-journal"
+              type="button"
+              class="shrink-0 inline-flex items-center gap-1 rounded-2xl border border-slate-500/60 bg-slate-900/80 px-2 py-1 text-[10px] font-medium text-slate-200 hover:border-fuchsia-300/70 hover:bg-slate-800/80 transition-colors"
+            >
+              <span>返回菜单</span>
+            </button>
+        </div>
+      </header>
+
+      <!-- 中间：粉丝卡片主展示区域 -->
+      <main class="flex-1 flex items-center justify-center mb-4">
+        <section
+          id="main-card"
+          class="relative w-full aspect-[9/16] max-h-[520px] rounded-[1.75rem] border border-white/15 shadow-soft-card overflow-hidden bg-slate-900"
+        >
+          <!-- 背景图（清晰展示） -->
+          <div
+            id="card-background"
+            class="absolute inset-0 bg-[url('/images/card-bg.jpg')] bg-cover bg-center"
+          ></div>
+
+          <!-- 贴纸图层 -->
+          <div
+            id="sticker-layer"
+            class="absolute inset-0 z-20 overflow-hidden"
+          >
+            <!-- 昵称实时展示 -->
+            <p
+              id="card-nickname"
+              class="absolute bottom-4 left-4 text-[26px] leading-tight font-semibold tracking-wide break-words text-white"
+            >
+              无名旅人
+            </p>
+          </div>
+        </section>
+      </main>
+
+      <!-- 底部：昵称输入 + 语音播放按钮 + 保存按钮 -->
+      <footer
+        class="mt-auto backdrop-blur-2xl bg-slate-950/60 border border-slate-50/10 rounded-3xl px-4 py-3 shadow-2xl"
+      >
+        <div class="flex items-center gap-3">
+          <div class="flex-1">
+            <label
+              for="nickname"
+              class="block text-[11px] font-medium text-slate-200/80 mb-1"
+            >
+              你的昵称
+            </label>
+            <div
+              class="flex items-center gap-2 rounded-2xl bg-slate-900/70 border border-slate-50/20 px-3 py-2 focus-within:border-fuchsia-300/80 focus-within:ring-2 focus-within:ring-fuchsia-300/40 transition-all"
+            >
+              <input
+                id="nickname"
+                name="nickname"
+                type="text"
+                placeholder="写下你想被呼唤的名字"
+                class="w-full bg-transparent border-none outline-none text-sm text-slate-50 placeholder:text-slate-400/80"
+              />
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <button
+              type="button"
+              aria-label="播放语音"
+              class="play-button relative shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-tr from-fuchsia-400 via-violet-400 to-sky-300 text-slate-950 shadow-soft-card border border-white/60 hover:shadow-[0_0_25px_rgba(244,114,182,0.7)] hover:scale-[1.02] active:scale-95 transition-all overflow-visible"
+            >
+              <span class="sr-only">播放语音</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="w-5 h-5"
+              >
+                <path
+                  d="M8.25 5.5c0-.88.95-1.42 1.71-.95l7.06 4.5c.7.45.7 1.45 0 1.9l-7.06 4.5A1.125 1.125 0 0 1 8.25 13.5V5.5Z"
+                />
+              </svg>
+            </button>
+
+            <button
+              id="save-memory"
+              type="button"
+              class="shrink-0 inline-flex items-center gap-1.5 rounded-2xl border border-fuchsia-300/80 bg-gradient-to-tr from-fuchsia-500/80 via-violet-500/80 to-sky-400/80 px-4 py-2 text-sm font-medium text-slate-950 shadow-soft-card hover:shadow-[0_0_25px_rgba(244,114,182,0.7)] hover:scale-[1.01] active:scale-95 transition-all"
+            >
+              <span>保存我的回忆</span>
+            </button>
+          </div>
+        </div>
+      </footer>
+
+      <!-- 卡面背景选择 -->
+      <section class="mt-4">
+        <div
+          class="backdrop-blur-xl bg-slate-950/70 border border-violet-300/30 rounded-3xl px-4 py-4 shadow-xl"
+        >
+          <div class="mb-3">
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <div>
+                <p class="text-[11px] font-semibold tracking-[0.2em] uppercase text-violet-200/90">
+                  Card Background
+                </p>
+                <p class="text-[10px] text-violet-100/75">
+                  选择一张你喜欢的卡面背景。
+                </p>
+              </div>
+            </div>
+          </div>
+          <div
+            id="background-library"
+            class="flex gap-3 overflow-x-auto py-2 scrollbar-thin scrollbar-thumb-violet-500/50 scrollbar-track-slate-800/30"
+          >
+            <!-- 将由 JS 动态注入背景图缩略图 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 秘密入口区域 -->
+      <section class="mt-4">
+        <div
+          class="backdrop-blur-xl bg-[rgba(0,0,0,0.5)] border border-purple-400/30 rounded-3xl px-5 py-5 shadow-xl relative overflow-hidden"
+          style="box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);"
+        >
+          <!-- 光晕效果 -->
+          <div class="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-transparent to-purple-500/10 pointer-events-none"></div>
+          
+          <div class="mb-4 relative z-10">
+            <h3 class="text-xl font-serif font-semibold tracking-wider text-pink-300/90 mb-1">
+              秘密入口
+            </h3>
+            <p class="text-sm text-pink-100/75 mb-4">
+              输入暗号，打开你的专属神秘国度
+            </p>
+            
+            <!-- 暗号输入区域 -->
+            <div class="flex gap-3 items-center">
+              <div class="flex-1">
+                <input
+                  id="secret-code"
+                  type="text"
+                  placeholder="在此输入你的私密暗号..."
+                  class="w-full h-11 bg-transparent border-b border-yellow-300/50 text-white placeholder:text-slate-400/60 focus:outline-none focus:border-yellow-300 transition-colors"
+                />
+              </div>
+              <button
+                id="unlock-button"
+                type="button"
+                class="shrink-0 px-6 py-3 rounded-full bg-gradient-to-r from-purple-800 to-black border border-yellow-300/50 text-white font-medium shadow-lg shadow-purple-500/20 animate-pulse-glow"
+              >
+                解锁
+              </button>
+            </div>
+          </div>
+          
+          <!-- 解锁提示 -->
+          <div
+            id="unlock-message"
+            class="hidden text-center text-sm text-yellow-200 mb-4 relative z-10"
+          >
+            秘密之门已为你开启...
+          </div>
+          
+          <!-- 贴纸库 -->
+          <div
+            id="sticker-library"
+            class="flex gap-3 overflow-x-auto py-2 scrollbar-thin scrollbar-thumb-fuchsia-500/50 scrollbar-track-slate-800/30 relative z-10"
+          >
+            <!-- 将由 JS 动态注入贴纸缩略图 -->
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 声音手账页面 Layer -->
+    <div
+      id="layer-journal"
+      class="w-full max-w-[500px] min-h-screen md:min-h-[640px] px-4 py-6 flex flex-col mx-auto hidden"
+    >
+      <!-- 顶部：标题栏 -->
+      <header class="mb-2">
+        <div
+          class="backdrop-blur-xl bg-slate-900/40 border border-slate-50/10 rounded-3xl px-4 py-2 shadow-xl flex items-center justify-between gap-2"
+        >
+          <div>
+            <h1 class="text-xl font-semibold tracking-wide">
+              声音手账
+            </h1>
+          </div>
+          <div>
+            <button
+              id="btn-back-to-menu"
+              type="button"
+              class="shrink-0 inline-flex items-center gap-1 rounded-2xl border border-slate-500/60 bg-slate-900/80 px-2 py-1 text-[10px] font-medium text-slate-200 hover:border-fuchsia-300/70 hover:bg-slate-800/80 transition-colors"
+            >
+              <span>返回菜单</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- 创作区：上半部分 -->
+      <main class="flex-1 mb-4">
+        <div
+          id="journal-canvas"
+          class="relative w-full aspect-[3/4] max-h-[600px] rounded-[1.75rem] border border-white/15 shadow-soft-card overflow-hidden"
+        >
+          <!-- 手账底图 -->
+          <div
+            class="absolute inset-0 bg-[url('/images/journal-bg.jpg')] bg-cover bg-center"
+          ></div>
+
+          <!-- 贴纸图层 -->
+          <div
+            id="journal-sticker-layer"
+            class="absolute inset-0 z-20 overflow-hidden"
+          ></div>
+        </div>
+      </main>
+
+      <!-- 贴纸库 -->
+      <section class="mt-4">
+        <div
+          class="backdrop-blur-xl bg-slate-950/70 border border-slate-50/10 rounded-3xl px-4 py-3"
+        >
+          <div class="flex items-center justify-between mb-3 gap-2">
+            <div>
+              <p class="text-[11px] font-semibold tracking-[0.2em] uppercase text-slate-100/80">
+                Sticker Library
+              </p>
+              <p class="text-[10px] text-slate-300/75">
+                轻点贴纸，将它放进你的手账创作区。
+              </p>
+            </div>
+          </div>
+
+          <!-- 贴纸分类和网格 -->
+          <div class="flex gap-4">
+            <!-- 左侧分类栏 -->
+            <div class="w-20 shrink-0">
+              <div class="flex flex-col gap-2">
+                <button
+                  data-category="characters"
+                  class="journal-category-btn w-full text-left rounded-2xl border border-fuchsia-300/80 bg-gradient-to-tr from-fuchsia-500/80 via-violet-500/80 to-sky-400/80 px-3 py-2 text-[11px] font-medium text-slate-950 transition-colors"
+                >
+                  人物
+                </button>
+                <button
+                  data-category="items"
+                  class="journal-category-btn w-full text-left rounded-2xl border border-slate-500/60 bg-slate-900/80 px-3 py-2 text-[11px] font-medium text-slate-200 hover:border-fuchsia-300/70 hover:bg-slate-800/80 transition-colors"
+                >
+                  物品
+                </button>
+              </div>
+            </div>
+
+            <!-- 右侧贴纸网格 -->
+            <div class="flex-1">
+              <div
+                id="journal-sticker-library"
+                class="grid grid-cols-4 gap-3 py-1"
+              >
+                <!-- 将由 JS 动态注入贴纸缩略图 -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 底部：操作栏 -->
+      <footer
+        class="mt-4 backdrop-blur-2xl bg-slate-950/60 border border-slate-50/10 rounded-3xl px-4 py-3 shadow-2xl"
+      >
+        <button
+          id="save-journal"
+          type="button"
+          class="w-full shrink-0 inline-flex items-center justify-center gap-1.5 rounded-2xl border border-fuchsia-300/80 bg-gradient-to-tr from-fuchsia-500/80 via-violet-500/80 to-sky-400/80 px-4 py-2 text-sm font-medium text-slate-950 shadow-soft-card hover:shadow-[0_0_25px_rgba(244,114,182,0.7)] hover:scale-[1.01] active:scale-95 transition-all"
+        >
+          <span>保存手账</span>
+        </button>
+      </footer>
+    </div>
+
+    <!-- 功能开发中覆盖层 -->
+    <div
+      id="feature-overlay"
+      class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 backdrop-blur-xl"
+    >
+      <div
+        class="w-full max-w-xs mx-4 rounded-3xl border border-slate-100/15 bg-slate-900/70 px-5 py-6 text-center shadow-soft-card"
+      >
+        <p class="text-sm font-semibold text-slate-50 mb-2">
+          功能开发中，敬请期待
+        </p>
+        <p class="text-xs text-slate-300 mb-5">
+          这里将会是沐程的特别空间。等我准备好故事，再邀请你一起来探索。
+        </p>
+        <button
+          id="feature-overlay-back"
+          type="button"
+          class="inline-flex items-center justify-center rounded-2xl border border-slate-200/80 bg-slate-100 text-slate-900 px-4 py-1.5 text-xs font-medium hover:bg-white hover:shadow-md active:scale-95 transition-all"
+        >
+          返回粉丝空间
+        </button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

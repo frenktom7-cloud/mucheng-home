@@ -1,0 +1,224 @@
+/* --- 基础容器 --- */
+.app-container {
+    position: relative;
+    background-color: #0f172a;
+}
+
+/* --- 贴纸库样式 --- */
+#journal-sticker-library {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 0.25rem;
+}
+
+/* 贴纸预览图样式 */
+.sticker-preview {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+    border-radius: 0.75rem;
+    background-color: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(148, 163, 184, 0.6);
+    transition: all 0.2s ease;
+}
+
+.sticker-preview:hover {
+    border-color: rgba(244, 114, 182, 0.7);
+    background-color: rgba(30, 41, 59, 0.8);
+}
+
+/* 贴纸预览图中的图片样式 */
+.sticker-preview img {
+    width: 3rem;
+    height: 3rem;
+    object-contain;
+    image-rendering: -webkit-optimize-contrast;
+    backface-visibility: hidden;
+}
+
+/* 滚动条样式 */
+#journal-sticker-library::-webkit-scrollbar {
+    width: 4px;
+}
+
+#journal-sticker-library::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 2px;
+}
+
+#journal-sticker-library::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.5);
+    border-radius: 2px;
+}
+
+#journal-sticker-library::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.7);
+}
+
+/* --- 强制遮罩层初始状态不可点击 --- */
+#transition-overlay, #stardust-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: none !important; /* 初始强制消失 */
+    opacity: 0;
+    pointer-events: none; /* 确保不挡住点击 */
+    transition: opacity 0.6s ease;
+}
+
+/* --- 乙游风格按钮 --- */
+.otome-button {
+    padding: 12px 30px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid #d4af37;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 15px;
+    letter-spacing: 2px;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+    cursor: pointer;
+    z-index: 100;
+}
+
+/* --- 贴纸相关样式 (防止模糊和按钮变形) --- */
+.sticker-wrapper {
+  --s: 0.5;
+  --r: 0deg;
+  --x: 0px;
+  --y: 0px;
+  --f: 1;
+  position: absolute;
+  cursor: move;
+  transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(var(--s));
+  transform-origin: center center;
+  padding: 0;
+  margin: 0;
+  z-index: 10;
+}
+
+.sticker-img {
+  width: 300px; /* 初始宽度设大，保证高清 */
+  height: auto;
+  object-contain;
+  image-rendering: -webkit-optimize-contrast;
+  backface-visibility: hidden;
+  transform: scaleX(var(--f));
+  transform-origin: center center;
+}
+
+/* 控制按钮样式 */
+.delete-btn, .flip-btn, .scale-handle {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  font-size: 16px;
+  font-weight: bold;
+  transform: translate(-50%, -50%) scale(calc(1 / var(--s))) rotate(calc(-1 * var(--r))) scaleX(var(--f));
+  transform-origin: center center;
+}
+
+/* 按钮位置 */
+.delete-btn {
+  top: -18px;
+  right: -18px;
+}
+
+.flip-btn {
+  bottom: -18px;
+  left: -18px;
+}
+
+.scale-handle {
+  bottom: -18px;
+  right: -18px;
+  cursor: nwse-resize;
+}
+
+/* 确保按钮在缩放时保持大小 */
+.delete-btn:active, .flip-btn:active, .scale-handle:active {
+  transform: translate(-50%, -50%) scale(calc(1 / var(--s))) rotate(calc(-1 * var(--r))) scaleX(var(--f)) scale(0.9);
+}
+
+/* 按钮的默认隐藏状态 */
+.delete-btn, .flip-btn, .scale-handle {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+/* 选中贴纸时显示按钮 */
+.sticker-wrapper.selected .delete-btn,
+.sticker-wrapper.selected .flip-btn,
+.sticker-wrapper.selected .scale-handle {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 贴纸选中状态的边框效果 */
+.sticker-wrapper.selected {
+  outline: 2px solid rgba(212, 175, 55, 0.5);
+  border-radius: 8px;
+}
+
+/* 粒子动画 */
+@keyframes star-float {
+    0% { transform: translate(0, 0); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)); opacity: 0; }
+}
+.stardust-particle {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: gold;
+    border-radius: 50%;
+    animation: star-float 1.2s ease-out forwards;
+}
+
+/* 呼吸发光动画 */
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(168, 85, 247, 0.5), 0 0 20px rgba(168, 85, 247, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(168, 85, 247, 0.7), 0 0 25px rgba(168, 85, 247, 0.5), 0 0 30px rgba(168, 85, 247, 0.3);
+    }
+}
+
+.animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* 金光闪过动画 */
+@keyframes gold-flash {
+    0% { opacity: 0; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0; transform: scale(1); }
+}
+
+.gold-flash-effect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle, rgba(255,215,0,0.8) 0%, rgba(255,215,0,0) 70%);
+    animation: gold-flash 1s ease-out forwards;
+    pointer-events: none;
+    z-index: 100;
+}
