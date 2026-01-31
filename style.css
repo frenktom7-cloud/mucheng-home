@@ -101,6 +101,12 @@
   margin: 0;
   z-index: 10;
   touch-action: none !important;
+  -webkit-user-drag: none;
+}
+
+/* 确保所有的按钮具有 pointer-events: auto; */
+.delete-btn, .flip-btn, .scale-handle {
+  pointer-events: auto !important;
 }
 
 .sticker-img {

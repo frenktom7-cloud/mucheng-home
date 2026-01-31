@@ -83,6 +83,9 @@ function executeOtomeTransition(targetLayerId) {
 }
 
 // --- 3. 贴纸交互功能 ---
+// 全局变量
+let highestZIndex = 1000;
+
 // 管理贴纸选中状态
 function selectSticker(sticker) {
     // 移除所有贴纸的选中状态
@@ -91,6 +94,8 @@ function selectSticker(sticker) {
     });
     // 添加当前贴纸的选中状态
     sticker.classList.add('selected');
+    // 确保选中的贴纸永远处于最前方
+    sticker.style.zIndex = ++highestZIndex;
 }
 
 function addStickerToCanvas(src) {
@@ -99,11 +104,19 @@ function addStickerToCanvas(src) {
 
     const wrapper = document.createElement('div');
     wrapper.className = 'sticker-wrapper';
+    // 初始化CSS变量
     wrapper.style.setProperty('--s', '0.5');
     wrapper.style.setProperty('--r', '0deg');
     wrapper.style.setProperty('--x', '0px');
     wrapper.style.setProperty('--y', '0px');
     wrapper.style.setProperty('--f', '1');
+    // 存储状态到dataset
+    wrapper.dataset.x = '0';
+    wrapper.dataset.y = '0';
+    wrapper.dataset.s = '0.5';
+    wrapper.dataset.r = '0';
+    // 确保transform-origin始终锁定为center center
+    wrapper.style.transformOrigin = 'center center';
 
     // 创建贴纸图片
     const img = document.createElement('img');
@@ -180,28 +193,38 @@ function initStickerInteract(el) {
     // 确保interact库已加载
     if (!window.interact) return;
     
-    let x = 0, y = 0, s = 0.5, r = 0;
+    // 从dataset读取初始状态
+    let x = parseFloat(el.dataset.x) || 0;
+    let y = parseFloat(el.dataset.y) || 0;
+    let s = parseFloat(el.dataset.s) || 0.5;
+    let r = parseFloat(el.dataset.r) || 0;
+    
+    let startDistance = 0;
+    let startScale = s;
+    let startRotation = r;
+    let centerX = 0, centerY = 0;
+    
+    // 确保transform-origin始终锁定为center center
+    el.style.transformOrigin = 'center center';
     
     // 使用interact.js库实现拖拽功能
     interact(el)
         .draggable({
             inertia: true, // 增加拖拽流畅度
-            modifiers: [
-                interact.modifiers.restrictRect({
-                    restriction: 'parent',
-                    endOnly: true
-                })
-            ],
+            origin: 'parent', // 明确设置origin为parent
             listeners: {
                 start(event) {
                     // 阻止页面滚动干扰
                     event.preventDefault();
                     
-                    // 选中当前贴纸
+                    // 选中当前贴纸并置顶
                     selectSticker(el);
                     
-                    // 给正在拖拽的贴纸临时增加一个非常高的z-index
-                    el.style.zIndex = '9999';
+                    // 从dataset读取最新状态
+                    x = parseFloat(el.dataset.x) || 0;
+                    y = parseFloat(el.dataset.y) || 0;
+                    s = parseFloat(el.dataset.s) || 0.5;
+                    r = parseFloat(el.dataset.r) || 0;
                 },
                 move(event) {
                     // 阻止页面滚动干扰
@@ -211,44 +234,148 @@ function initStickerInteract(el) {
                     x += event.dx;
                     y += event.dy;
                     
-                    // 更新CSS变量
-                    el.style.setProperty('--x', `${x}px`);
-                    el.style.setProperty('--y', `${y}px`);
+                    // 数值防御：确保坐标是有限数值
+                    if (Number.isFinite(x) && Number.isFinite(y)) {
+                        // 更新CSS变量
+                        el.style.setProperty('--x', `${x}px`);
+                        el.style.setProperty('--y', `${y}px`);
+                        // 写回dataset
+                        el.dataset.x = x.toString();
+                        el.dataset.y = y.toString();
+                    }
                 },
                 end(event) {
-                    // 恢复默认z-index
-                    el.style.zIndex = '10';
+                    // 操作结束后，确保状态已保存
+                    el.dataset.x = x.toString();
+                    el.dataset.y = y.toString();
                 }
             }
         })
-        .resizable({
-            edges: {
-                right: '.scale-handle',
-                bottom: '.scale-handle',
-                bottomRight: '.scale-handle'
-            },
+        // 增加双指缩放旋转支持
+        .gesturable({
             inertia: true,
             listeners: {
+                start(event) {
+                    // 阻止页面滚动干扰
+                    event.preventDefault();
+                    
+                    // 选中当前贴纸并置顶
+                    selectSticker(el);
+                    
+                    // 从dataset读取最新状态
+                    x = parseFloat(el.dataset.x) || 0;
+                    y = parseFloat(el.dataset.y) || 0;
+                    s = parseFloat(el.dataset.s) || 0.5;
+                    r = parseFloat(el.dataset.r) || 0;
+                    
+                    // 记录初始值
+                    startScale = s;
+                    startRotation = r;
+                },
                 move(event) {
                     // 阻止页面滚动干扰
                     event.preventDefault();
                     
-                    // 更新缩放和旋转
-                    let newWidth = event.rect.width;
-                    let newHeight = event.rect.height;
+                    // 更新缩放比例
+                    let newScale = startScale * event.scale;
+                    // 数值防御：限制scale的最小值为0.1，最大值为5
+                    newScale = Math.max(Math.min(newScale, 5), 0.1);
                     
-                    // 计算缩放比例
-                    let newScale = Math.max(Math.min(newWidth / 300, 2), 0.1);
+                    // 更新旋转角度
+                    let newRotation = startRotation + event.angle;
                     
-                    // 更新CSS变量
-                    el.style.setProperty('--s', newScale);
-                    
-                    // 保持位置不变
-                    el.style.setProperty('--x', `${event.rect.left}px`);
-                    el.style.setProperty('--y', `${event.rect.top}px`);
+                    // 数值防御：确保数值是有限数值
+                    if (Number.isFinite(newScale) && Number.isFinite(newRotation)) {
+                        // 更新状态
+                        s = newScale;
+                        r = newRotation;
+                        
+                        // 更新CSS变量
+                        el.style.setProperty('--s', s);
+                        el.style.setProperty('--r', `${r}deg`);
+                        
+                        // 写回dataset
+                        el.dataset.s = s.toString();
+                        el.dataset.r = r.toString();
+                    }
+                },
+                end(event) {
+                    // 操作结束后，确保状态已保存
+                    el.dataset.s = s.toString();
+                    el.dataset.r = r.toString();
                 }
             }
         });
+    
+    // 缩放与旋转功能
+    const handle = el.querySelector('.scale-handle');
+    if (handle) {
+        interact(handle)
+            .draggable({
+                inertia: true,
+                listeners: {
+                    start(event) {
+                        // 阻止页面滚动干扰
+                        event.preventDefault();
+                        
+                        // 选中当前贴纸并置顶
+                        selectSticker(el);
+                        
+                        // 从dataset读取最新状态
+                        x = parseFloat(el.dataset.x) || 0;
+                        y = parseFloat(el.dataset.y) || 0;
+                        s = parseFloat(el.dataset.s) || 0.5;
+                        r = parseFloat(el.dataset.r) || 0;
+                        
+                        // 锁定贴纸的中心点坐标
+                        const rect = el.getBoundingClientRect();
+                        centerX = rect.left + rect.width / 2;
+                        centerY = rect.top + rect.height / 2;
+                        
+                        // 记录初始值
+                        startDistance = Math.sqrt(Math.pow(event.clientX - centerX, 2) + Math.pow(event.clientY - centerY, 2));
+                        startScale = s;
+                        startRotation = r;
+                    },
+                    move(event) {
+                        // 阻止页面滚动干扰
+                        event.preventDefault();
+                        
+                        // 计算当前手指距离中心点的长度
+                        const currentDistance = Math.sqrt(Math.pow(event.clientX - centerX, 2) + Math.pow(event.clientY - centerY, 2));
+                        
+                        // 计算缩放比例
+                        let newScale = startScale * (currentDistance / startDistance);
+                        // 数值防御：限制scale的最小值为0.1，最大值为5
+                        newScale = Math.max(Math.min(newScale, 5), 0.1);
+                        
+                        // 计算旋转角度
+                        const angle = Math.atan2(event.clientY - centerY, event.clientX - centerX);
+                        let newRotation = angle * (180 / Math.PI);
+                        
+                        // 数值防御：确保数值是有限数值
+                        if (Number.isFinite(newScale) && Number.isFinite(newRotation)) {
+                            // 更新状态
+                            s = newScale;
+                            r = newRotation;
+                            
+                            // 更新CSS变量
+                            el.style.setProperty('--s', s);
+                            el.style.setProperty('--r', `${r}deg`);
+                            
+                            // 写回dataset
+                            el.dataset.s = s.toString();
+                            el.dataset.r = r.toString();
+                        }
+                    },
+                    end(event) {
+                        // 操作结束后，确保状态已保存
+                        el.dataset.s = s.toString();
+                        el.dataset.r = r.toString();
+                    }
+                }
+            });
+    }
     
     // 点击事件处理
     el.addEventListener('click', (e) => {
@@ -257,12 +384,15 @@ function initStickerInteract(el) {
     });
     
     // 缩放旋转手柄点击事件
-    const handle = el.querySelector('.scale-handle');
-    handle.addEventListener('click', (e) => {
-        e.stopPropagation();
-        selectSticker(el);
-    });
+    if (handle) {
+        handle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectSticker(el);
+        });
+    }
 }
+
+
 
 // --- 4. 初始化 ---
 function renderStickers(category) {
@@ -347,6 +477,24 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('保存手账失败:', error);
         });
     });
+
+    // 昵称实时同步功能
+    const nicknameInput = document.getElementById('nickname');
+    const cardNickname = document.getElementById('card-nickname');
+    
+    if (nicknameInput && cardNickname) {
+        // 初始同步
+        const syncNickname = () => {
+            const value = nicknameInput.value.trim();
+            cardNickname.innerText = value || '无名旅人';
+        };
+        
+        // 添加输入事件监听
+        nicknameInput.addEventListener('input', syncNickname);
+        
+        // 初始同步
+        syncNickname();
+    }
 
     // 卡面背景预览选择功能
     // 只添加实际存在的图片文件
