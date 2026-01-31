@@ -357,19 +357,8 @@ document.addEventListener('DOMContentLoaded', () => {
         'images/card-bg.jpg'
     ];
 
-    // 锁定状态的背景图
-    const lockedBackgrounds = [
-        'images/card_02.jpg',
-        'images/card_08.jpg',
-        'images/card_09.jpg'
-    ];
-
     const backgroundLibrary = document.getElementById('background-library');
     const cardBackground = document.getElementById('card-background');
-    const unlockModal = document.getElementById('unlock-modal');
-    const closeModal = document.getElementById('close-modal');
-    const confirmUnlock = document.getElementById('confirm-unlock');
-    const unlockCodeInput = document.getElementById('unlock-code');
 
     if (backgroundLibrary && cardBackground) {
         // 生成背景图预览
@@ -397,85 +386,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             backgroundLibrary.appendChild(item);
-        });
-        
-        // 生成锁定状态的背景图预览
-        lockedBackgrounds.forEach((bgPath) => {
-            const item = document.createElement('div');
-            item.className = 'bg-preview flex-shrink-0 w-16 h-24 rounded-xl overflow-hidden border-2 border-transparent cursor-pointer transition-all hover:scale-105 relative';
-            
-            item.innerHTML = `
-                <div class="w-full h-full bg-cover bg-center blur-sm" style="background-image: url('${bgPath}');"></div>
-                <div class="absolute inset-0 flex items-center justify-center bg-black/40">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#d4af37]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                </div>
-            `;
-            
-            // 添加点击事件
-            item.addEventListener('click', () => {
-                // 触发震动反馈（如果设备支持）
-                if (navigator.vibrate) {
-                    navigator.vibrate(100);
-                }
-                
-                // 显示解锁弹窗
-                if (unlockModal) {
-                    unlockModal.classList.remove('hidden');
-                    unlockModal.classList.add('flex');
-                }
-            });
-            
-            backgroundLibrary.appendChild(item);
-        });
-    }
-
-    // 解锁弹窗功能
-    if (unlockModal && closeModal && confirmUnlock) {
-        // 关闭弹窗
-        closeModal.addEventListener('click', () => {
-            unlockModal.classList.add('hidden');
-            unlockModal.classList.remove('flex');
-        });
-        
-        // 点击弹窗外部关闭
-        unlockModal.addEventListener('click', (e) => {
-            if (e.target === unlockModal) {
-                unlockModal.classList.add('hidden');
-                unlockModal.classList.remove('flex');
-            }
-        });
-        
-        // 确认解锁
-        confirmUnlock.addEventListener('click', () => {
-            const code = unlockCodeInput.value.trim();
-            
-            // 验证暗号
-            if (code === 'LOVE888') {
-                // 保存解锁状态到localStorage
-                localStorage.setItem('isUnlocked', 'true');
-                
-                // 显示成功消息
-                alert('秘密之门已为你开启...');
-                
-                // 关闭弹窗
-                unlockModal.classList.add('hidden');
-                unlockModal.classList.remove('flex');
-                
-                // 刷新背景图列表，显示已解锁的背景图
-                location.reload();
-            } else {
-                // 显示错误消息
-                alert('契约码错误，请重试...');
-            }
-        });
-        
-        // 输入框回车事件
-        unlockCodeInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                confirmUnlock.click();
-            }
         });
     }
 
@@ -546,25 +456,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.key === 'Enter') {
                 unlockButton.click();
             }
-        });
-    }
-
-    // 昵称输入交互反馈
-    const nicknameInput = document.getElementById('nickname');
-    const cardNickname = document.getElementById('card-nickname');
-    
-    if (nicknameInput && cardNickname) {
-        nicknameInput.addEventListener('input', () => {
-            // 更新卡面预览中的昵称
-            cardNickname.textContent = nicknameInput.value || '无名旅人';
-            
-            // 添加呼吸变幻效果
-            cardNickname.classList.add('animate-breathe');
-            
-            // 3秒后移除动画，以便下次输入时再次触发
-            setTimeout(() => {
-                cardNickname.classList.remove('animate-breathe');
-            }, 3000);
         });
     }
 });
