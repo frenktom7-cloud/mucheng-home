@@ -2,19 +2,19 @@
   "name": "沐程之家",
   "short_name": "沐程之家",
   "description": "声之寄居 · 虚拟偶像粉丝卡片，小小屏幕里的梦幻居所。",
-  "start_url": "./index.html",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#020617",
   "theme_color": "#a3bffa",
   "icons": [
     {
-      "src": "images/card_01.png",
+      "src": "/images/card_01.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "images/card_01.png",
+      "src": "/images/card_01.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
@@ -24,7 +24,7 @@
   "categories": ["entertainment", "lifestyle"],
   "screenshots": [
     {
-      "src": "images/card-bg.jpg",
+      "src": "/images/card-bg.jpg",
       "sizes": "1080x1920",
       "type": "image/jpeg"
     }

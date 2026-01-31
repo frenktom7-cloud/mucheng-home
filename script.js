@@ -177,13 +177,12 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initStickerInteract(el) {
-    // 确保interact.js库已加载
-    if (typeof interact === 'undefined') {
-        console.error('interact.js library is not loaded');
-        return;
-    }
-
-    // 初始化拖拽功能
+    // 确保interact库已加载
+    if (!window.interact) return;
+    
+    let x = 0, y = 0, s = 0.5, r = 0;
+    
+    // 使用interact.js库实现拖拽功能
     interact(el)
         .draggable({
             inertia: true, // 增加拖拽流畅度
@@ -197,18 +196,16 @@ function initStickerInteract(el) {
                 start(event) {
                     // 阻止页面滚动干扰
                     event.preventDefault();
-                    // 给正在拖拽的贴纸临时增加一个非常高的z-index
-                    el.style.zIndex = '9999';
+                    
                     // 选中当前贴纸
                     selectSticker(el);
+                    
+                    // 给正在拖拽的贴纸临时增加一个非常高的z-index
+                    el.style.zIndex = '9999';
                 },
                 move(event) {
                     // 阻止页面滚动干扰
                     event.preventDefault();
-                    
-                    // 获取当前位置
-                    let x = parseFloat(el.style.getPropertyValue('--x')) || 0;
-                    let y = parseFloat(el.style.getPropertyValue('--y')) || 0;
                     
                     // 更新位置
                     x += event.dx;
@@ -219,60 +216,53 @@ function initStickerInteract(el) {
                     el.style.setProperty('--y', `${y}px`);
                 },
                 end(event) {
-                    // 恢复z-index
+                    // 恢复默认z-index
                     el.style.zIndex = '10';
                 }
             }
         })
         .resizable({
             edges: {
-                right: true,
-                bottom: true,
-                left: true,
-                top: true
+                right: '.scale-handle',
+                bottom: '.scale-handle',
+                bottomRight: '.scale-handle'
             },
+            inertia: true,
             listeners: {
                 move(event) {
                     // 阻止页面滚动干扰
                     event.preventDefault();
                     
-                    // 获取当前缩放
-                    let s = parseFloat(el.style.getPropertyValue('--s')) || 0.5;
+                    // 更新缩放和旋转
+                    let newWidth = event.rect.width;
+                    let newHeight = event.rect.height;
                     
-                    // 更新缩放
-                    s *= event.ds;
-                    s = Math.max(Math.min(s, 2), 0.1); // 限制缩放范围
+                    // 计算缩放比例
+                    let newScale = Math.max(Math.min(newWidth / 300, 2), 0.1);
                     
                     // 更新CSS变量
-                    el.style.setProperty('--s', s);
+                    el.style.setProperty('--s', newScale);
+                    
+                    // 保持位置不变
+                    el.style.setProperty('--x', `${event.rect.left}px`);
+                    el.style.setProperty('--y', `${event.rect.top}px`);
                 }
             }
         });
-
-    // 为贴纸添加点击事件
+    
+    // 点击事件处理
     el.addEventListener('click', (e) => {
         if (e.target.classList.contains('scale-handle') || e.target.classList.contains('delete-btn') || e.target.classList.contains('flip-btn')) return;
         selectSticker(el);
     });
-
-    // 为贴纸图片添加点击事件
-    const img = el.querySelector('.sticker-img');
-    if (img) {
-        img.addEventListener('click', (e) => {
-            e.stopPropagation();
-            selectSticker(el);
-        });
-    }
+    
+    // 缩放旋转手柄点击事件
+    const handle = el.querySelector('.scale-handle');
+    handle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectSticker(el);
+    });
 }
-
-// 全局监听，阻止拖拽时页面滚动
-window.addEventListener('touchmove', (e) => {
-    // 检查是否有正在拖拽的贴纸
-    const draggingSticker = document.querySelector('.sticker-wrapper[style*="z-index: 9999"]');
-    if (draggingSticker) {
-        e.preventDefault();
-    }
-}, { passive: false });
 
 // --- 4. 初始化 ---
 function renderStickers(category) {
