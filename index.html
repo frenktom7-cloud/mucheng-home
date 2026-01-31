@@ -187,56 +187,67 @@
         </section>
       </main>
 
-      <!-- 底部：昵称输入 + 语音播放按钮 + 保存按钮 -->
+      <!-- 底部：昵称输入 + 播放 + 保存按钮 -->
       <footer
-        class="mt-auto backdrop-blur-2xl bg-slate-950/60 border border-slate-50/10 rounded-3xl px-4 py-3 shadow-2xl"
+        class="mt-auto backdrop-blur-xl bg-[rgba(20,20,30,0.7)] border border-[#d4af37]/30 rounded-[1.5rem] px-5 py-5 shadow-xl animate-float relative overflow-hidden"
+        style="backdrop-filter: blur(12px); border-width: 0.5px; box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);"
       >
-        <div class="flex items-center gap-3">
-          <div class="flex-1">
+        <!-- 微弱光效 -->
+        <div class="absolute inset-0 bg-gradient-to-r from-yellow-500/5 via-transparent to-yellow-500/5 pointer-events-none"></div>
+        
+        <div class="flex flex-col gap-5 relative z-10">
+          <!-- 昵称输入框 -->
+          <div>
             <label
               for="nickname"
-              class="block text-[11px] font-medium text-slate-200/80 mb-1"
+              class="block text-sm font-medium text-[#d4af37]/80 mb-3"
+              style="letter-spacing: 0.1em;"
             >
               你的昵称
             </label>
             <div
-              class="flex items-center gap-2 rounded-2xl bg-slate-900/70 border border-slate-50/20 px-3 py-2 focus-within:border-fuchsia-300/80 focus-within:ring-2 focus-within:ring-fuchsia-300/40 transition-all"
+              class="relative"
             >
               <input
                 id="nickname"
                 name="nickname"
                 type="text"
                 placeholder="写下你想被呼唤的名字"
-                class="w-full bg-transparent border-none outline-none text-sm text-slate-50 placeholder:text-slate-400/80"
+                class="w-full bg-transparent border-b border-gradient-yellow text-white placeholder:text-[#d4af37]/40 placeholder:text-xs placeholder:tracking-wider focus:outline-none transition-colors"
+                style="padding-bottom: 0.5rem;"
               />
             </div>
           </div>
 
-          <div class="flex items-center gap-3">
+          <!-- 播放按钮和保存按钮 -->
+          <div class="flex gap-4 items-center">
             <button
               type="button"
               aria-label="播放语音"
-              class="play-button relative shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-tr from-fuchsia-400 via-violet-400 to-sky-300 text-slate-950 shadow-soft-card border border-white/60 hover:shadow-[0_0_25px_rgba(244,114,182,0.7)] hover:scale-[1.02] active:scale-95 transition-all overflow-visible"
+              class="play-button relative shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-full bg-transparent border border-[#d4af37]/50 text-[#d4af37] transition-all overflow-hidden"
             >
               <span class="sr-only">播放语音</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="currentColor"
-                class="w-5 h-5"
+                class="w-3.5 h-3.5"
               >
                 <path
                   d="M8.25 5.5c0-.88.95-1.42 1.71-.95l7.06 4.5c.7.45.7 1.45 0 1.9l-7.06 4.5A1.125 1.125 0 0 1 8.25 13.5V5.5Z"
                 />
               </svg>
+              <!-- 点击光圈动画 -->
+              <span class="absolute inset-0 rounded-full bg-[#d4af37]/20 scale-0 transition-transform duration-300"></span>
             </button>
 
             <button
               id="save-memory"
               type="button"
-              class="shrink-0 inline-flex items-center gap-1.5 rounded-2xl border border-fuchsia-300/80 bg-gradient-to-tr from-fuchsia-500/80 via-violet-500/80 to-sky-400/80 px-4 py-2 text-sm font-medium text-slate-950 shadow-soft-card hover:shadow-[0_0_25px_rgba(244,114,182,0.7)] hover:scale-[1.01] active:scale-95 transition-all"
+              class="flex-1 h-[44px] rounded-full bg-[rgba(20,20,30,0.7)] border border-[#d4af37]/50 text-[#d4af37] font-serif font-medium text-sm transition-all"
+              style="box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);"
             >
-              <span>保存我的回忆</span>
+              生成羁绊卡
             </button>
           </div>
         </div>
@@ -249,13 +260,16 @@
         >
           <div class="mb-3">
             <div class="flex items-center justify-between gap-2 mb-2">
-              <div>
+              <div class="flex items-center gap-2">
                 <p class="text-[11px] font-semibold tracking-[0.2em] uppercase text-violet-200/90">
                   Card Background
                 </p>
-                <p class="text-[10px] text-violet-100/75">
-                  选择一张你喜欢的卡面背景。
-                </p>
+                <div class="text-[#d4af37]">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 17h.01" />
+                  </svg>
+                </div>
               </div>
             </div>
           </div>
@@ -268,60 +282,55 @@
         </div>
       </section>
 
-      <!-- 秘密入口区域 -->
-      <section class="mt-4">
-        <div
-          class="backdrop-blur-xl bg-[rgba(0,0,0,0.5)] border border-purple-400/30 rounded-3xl px-5 py-5 shadow-xl relative overflow-hidden"
-          style="box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);"
-        >
-          <!-- 光晕效果 -->
-          <div class="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-transparent to-purple-500/10 pointer-events-none"></div>
+      <!-- 解锁弹窗 -->
+      <div
+        id="unlock-modal"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70"
+        style="backdrop-filter: blur(10px);"
+      >
+        <div class="relative w-full max-w-xs mx-4">
+          <!-- 关闭按钮 -->
+          <button
+            id="close-modal"
+            type="button"
+            class="absolute top-0 right-0 -mt-2 -mr-2 w-6 h-6 rounded-full bg-black border border-[#d4af37]/50 flex items-center justify-center text-[#d4af37] text-xs"
+          >
+            ✕
+          </button>
           
-          <div class="mb-4 relative z-10">
-            <h3 class="text-xl font-serif font-semibold tracking-wider text-pink-300/90 mb-1">
-              秘密入口
-            </h3>
-            <p class="text-sm text-pink-100/75 mb-4">
-              输入暗号，打开你的专属神秘国度
+          <!-- 弹窗卡片 -->
+          <div class="bg-black border border-[#d4af37]/50 rounded-xl p-6 shadow-2xl shadow-[#d4af37]/10">
+            <h2 class="text-xl font-serif font-semibold text-[#d4af37] mb-1 text-center">
+              Forbidden Territory
+            </h2>
+            <p class="text-sm text-[#d4af37]/70 mb-6 text-center">
+              禁忌区域
+            </p>
+            <p class="text-sm text-white/80 mb-6 text-center">
+              输入正确指令，解锁他的私密画卷。
             </p>
             
-            <!-- 暗号输入区域 -->
-            <div class="flex gap-3 items-center">
-              <div class="flex-1">
-                <input
-                  id="secret-code"
-                  type="text"
-                  placeholder="在此输入你的私密暗号..."
-                  class="w-full h-11 bg-transparent border-b border-yellow-300/50 text-white placeholder:text-slate-400/60 focus:outline-none focus:border-yellow-300 transition-colors"
-                />
-              </div>
-              <button
-                id="unlock-button"
-                type="button"
-                class="shrink-0 px-6 py-3 rounded-full bg-gradient-to-r from-purple-800 to-black border border-yellow-300/50 text-white font-medium shadow-lg shadow-purple-500/20 animate-pulse-glow"
-              >
-                解锁
-              </button>
+            <!-- 输入框 -->
+            <div class="mb-6">
+              <input
+                id="unlock-code"
+                type="text"
+                placeholder="请输入 8 位契约码..."
+                class="w-full bg-transparent border-b border-[#d4af37]/50 text-white placeholder:text-[#d4af37]/40 text-center py-2 focus:outline-none transition-colors"
+              />
             </div>
-          </div>
-          
-          <!-- 解锁提示 -->
-          <div
-            id="unlock-message"
-            class="hidden text-center text-sm text-yellow-200 mb-4 relative z-10"
-          >
-            秘密之门已为你开启...
-          </div>
-          
-          <!-- 贴纸库 -->
-          <div
-            id="sticker-library"
-            class="flex gap-3 overflow-x-auto py-2 scrollbar-thin scrollbar-thumb-fuchsia-500/50 scrollbar-track-slate-800/30 relative z-10"
-          >
-            <!-- 将由 JS 动态注入贴纸缩略图 -->
+            
+            <!-- 确认按钮 -->
+            <button
+              id="confirm-unlock"
+              type="button"
+              class="w-full py-3 rounded-full bg-gradient-to-r from-[#d4af37] to-black border border-[#d4af37]/50 text-white font-serif font-medium text-sm shadow-lg shadow-[#d4af37]/20 hover:shadow-[#d4af37]/30 transition-all"
+            >
+              确认解锁
+            </button>
           </div>
         </div>
-      </section>
+      </div>
     </div>
 
     <!-- 声音手账页面 Layer -->

@@ -222,3 +222,63 @@
     pointer-events: none;
     z-index: 100;
 }
+
+/* 浮动动画 */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+.animate-float {
+    animation: float 4s ease-in-out infinite;
+}
+
+/* 呼吸变幻动画 */
+@keyframes breathe {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+}
+
+.animate-breathe {
+    animation: breathe 3s ease-in-out infinite;
+}
+
+/* 播放按钮点击光圈动画 */
+.play-button:active span {
+    transform: scale(1.5);
+}
+
+/* 自定义银色 */
+.text-silver-200 {
+    color: rgba(203, 213, 225, 0.8);
+}
+
+.border-silver-300\/50 {
+    border-color: rgba(203, 213, 225, 0.5);
+}
+
+/* 输入框底部的金边渐变线 */
+#layer-identity input {
+    position: relative;
+}
+
+#layer-identity input::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(212, 175, 55, 0.8), transparent);
+    pointer-events: none;
+}
