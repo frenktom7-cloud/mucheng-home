@@ -177,89 +177,102 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initStickerInteract(el) {
-    let x = 0, y = 0, s = 0.5, r = 0;
-    let isDragging = false;
-    let isScaling = false;
-    let startX, startY, startScale, startRotation;
+    // 确保interact.js库已加载
+    if (typeof interact === 'undefined') {
+        console.error('interact.js library is not loaded');
+        return;
+    }
 
-    // 拖拽功能 - 使用原生鼠标事件
-    el.addEventListener('mousedown', (e) => {
-        if (e.target.classList.contains('scale-handle') || e.target.classList.contains('delete-btn') || e.target.classList.contains('flip-btn')) return;
-        
-        // 记录初始位置和时间
-        let mouseDownTime = Date.now();
-        let initialX = e.clientX;
-        let initialY = e.clientY;
-        
-        const mouseUpHandler = (event) => {
-            let mouseUpTime = Date.now();
-            let currentX = event.clientX;
-            let currentY = event.clientY;
-            let distance = Math.sqrt(Math.pow(currentX - initialX, 2) + Math.pow(currentY - initialY, 2));
-            
-            if (mouseUpTime - mouseDownTime < 200 && distance < 5) {
-                // 是点击事件，不是拖拽
-                selectSticker(el);
+    // 初始化拖拽功能
+    interact(el)
+        .draggable({
+            inertia: true, // 增加拖拽流畅度
+            modifiers: [
+                interact.modifiers.restrictRect({
+                    restriction: 'parent',
+                    endOnly: true
+                })
+            ],
+            listeners: {
+                start(event) {
+                    // 阻止页面滚动干扰
+                    event.preventDefault();
+                    // 给正在拖拽的贴纸临时增加一个非常高的z-index
+                    el.style.zIndex = '9999';
+                    // 选中当前贴纸
+                    selectSticker(el);
+                },
+                move(event) {
+                    // 阻止页面滚动干扰
+                    event.preventDefault();
+                    
+                    // 获取当前位置
+                    let x = parseFloat(el.style.getPropertyValue('--x')) || 0;
+                    let y = parseFloat(el.style.getPropertyValue('--y')) || 0;
+                    
+                    // 更新位置
+                    x += event.dx;
+                    y += event.dy;
+                    
+                    // 更新CSS变量
+                    el.style.setProperty('--x', `${x}px`);
+                    el.style.setProperty('--y', `${y}px`);
+                },
+                end(event) {
+                    // 恢复z-index
+                    el.style.zIndex = '10';
+                }
             }
-            document.removeEventListener('mouseup', mouseUpHandler);
-            document.removeEventListener('mousemove', mouseMoveHandler);
-        };
-        
-        const mouseMoveHandler = () => {
-            document.removeEventListener('mouseup', mouseUpHandler);
-            document.removeEventListener('mousemove', mouseMoveHandler);
-        };
-        
-        document.addEventListener('mouseup', mouseUpHandler);
-        document.addEventListener('mousemove', mouseMoveHandler);
-        
-        isDragging = true;
-        startX = e.clientX - x;
-        startY = e.clientY - y;
+        })
+        .resizable({
+            edges: {
+                right: true,
+                bottom: true,
+                left: true,
+                top: true
+            },
+            listeners: {
+                move(event) {
+                    // 阻止页面滚动干扰
+                    event.preventDefault();
+                    
+                    // 获取当前缩放
+                    let s = parseFloat(el.style.getPropertyValue('--s')) || 0.5;
+                    
+                    // 更新缩放
+                    s *= event.ds;
+                    s = Math.max(Math.min(s, 2), 0.1); // 限制缩放范围
+                    
+                    // 更新CSS变量
+                    el.style.setProperty('--s', s);
+                }
+            }
+        });
+
+    // 为贴纸添加点击事件
+    el.addEventListener('click', (e) => {
+        if (e.target.classList.contains('scale-handle') || e.target.classList.contains('delete-btn') || e.target.classList.contains('flip-btn')) return;
+        selectSticker(el);
     });
 
-    document.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-            x = e.clientX - startX;
-            y = e.clientY - startY;
-            el.style.setProperty('--x', `${x}px`);
-            el.style.setProperty('--y', `${y}px`);
-        }
-    });
-
-    document.addEventListener('mouseup', () => {
-        isDragging = false;
-        isScaling = false;
-    });
-
-    // 缩放旋转功能 - 使用原生鼠标事件
-    const handle = el.querySelector('.scale-handle');
-    handle.addEventListener('mousedown', (e) => {
-        isScaling = true;
-        startX = e.clientX;
-        startY = e.clientY;
-        startScale = s;
-        startRotation = r;
-    });
-
-    document.addEventListener('mousemove', (e) => {
-        if (isScaling) {
-            const rect = el.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            
-            // 计算距离和角度
-            const dist = Math.sqrt(Math.pow(e.clientX - centerX, 2) + Math.pow(e.clientY - centerY, 2));
-            s = Math.max(Math.min(dist / 150, 2), 0.1); // 调整敏感度和范围
-            const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-            r = angle * (180 / Math.PI);
-            
-            // 更新CSS变量
-            el.style.setProperty('--s', s);
-            el.style.setProperty('--r', `${r}deg`);
-        }
-    });
+    // 为贴纸图片添加点击事件
+    const img = el.querySelector('.sticker-img');
+    if (img) {
+        img.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectSticker(el);
+        });
+    }
 }
+
+// 全局监听，阻止拖拽时页面滚动
+window.addEventListener('touchmove', (e) => {
+    // 检查是否有正在拖拽的贴纸
+    const draggingSticker = document.querySelector('.sticker-wrapper[style*="z-index: 9999"]');
+    if (draggingSticker) {
+        e.preventDefault();
+    }
+}, { passive: false });
 
 // --- 4. 初始化 ---
 function renderStickers(category) {
